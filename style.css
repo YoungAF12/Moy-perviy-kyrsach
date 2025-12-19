@@ -464,6 +464,7 @@ body {
 .book-actions {
     display: flex;
     gap: 10px;
+    margin-top: 15px;
 }
 
 /* Профиль */
@@ -505,6 +506,16 @@ body {
     border-radius: var(--radius);
     margin: 40px 0;
     box-shadow: var(--shadow);
+}
+
+.recent-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: var(--light-gray);
+    margin-bottom: 10px;
+    border-radius: var(--radius-sm);
 }
 
 .guest-message {
@@ -585,7 +596,7 @@ body {
 
 .empty-message {
     text-align: center;
-    padding: 40px;
+    padding: 20px;
     color: var(--gray);
 }
 
@@ -620,5 +631,10 @@ body {
     
     .books-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .book-filters {
+        overflow-x: auto;
+        padding-bottom: 10px;
     }
 }
