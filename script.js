@@ -1,12 +1,11 @@
-// Firebase конфигурация - ЗАМЕНИТЕ НА ВАШУ КОНФИГУРАЦИЮ
+// Firebase конфигурация - ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ!
 const firebaseConfig = {
-  apiKey: "AIzaSyDqnau8N2mHjhOTMpxXqYe8EDGfxqGqQn0",
-  authDomain: "my-first-kyrsachic.firebaseapp.com",
-  projectId: "my-first-kyrsachic",
-  storageBucket: "my-first-kyrsachic.firebasestorage.app",
-  messagingSenderId: "741117010262",
-  appId: "1:741117010262:web:2972f2e62517ccc2b9f6f7",
-  measurementId: "G-81YS0ZHEXX"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
 // Инициализация Firebase
@@ -64,13 +63,13 @@ const elements = {
     notificationText: document.getElementById('notificationText')
 };
 
-// Инициализация приложения
+// ==================== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ====================
+
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
 });
 
-// Инициализация Firebase состояния
 function initApp() {
     auth.onAuthStateChanged((user) => {
         currentUser = user;
@@ -78,12 +77,12 @@ function initApp() {
         if (user) {
             loadUserData(user.uid);
         }
-        // Загружаем книги после инициализации
         loadBooksFromFirebase();
     });
 }
 
-// Настройка обработчиков событий
+// ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+
 function setupEventListeners() {
     // Навигация
     elements.navLinks.forEach(link => {
@@ -154,28 +153,32 @@ function setupEventListeners() {
     });
 }
 
-// Загрузка книг из Firebase
+// ==================== РАБОТА С КНИГАМИ ====================
+
 async function loadBooksFromFirebase() {
     try {
-        elements.booksContainer.innerHTML = `
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i> Загрузка книг...
-            </div>
-        `;
-        
-        const booksSnapshot = await db.collection('books').get();
+        console.log('Загружаем книги из коллекции "books"...');
+        const booksSnapshot = await db.collection('books').orderBy('createdAt', 'desc').get();
         books = [];
         
         if (booksSnapshot.empty) {
+            console.log('Коллекция "books" пустая. Книг нет.');
             elements.booksContainer.innerHTML = `
                 <div class="empty-message">
                     <i class="fas fa-book"></i>
                     <p>В библиотеке пока нет книг</p>
+                    ${currentUser ? `
+                        <p style="margin-top: 10px; font-size: 14px;">
+                            Используйте консоль (F12) для добавления книг<br>
+                            addBookToFirebase({ title: "...", ... })
+                        </p>
+                    ` : ''}
                 </div>
             `;
             return;
         }
         
+        console.log(`Найдено ${booksSnapshot.size} книг в коллекции "books"`);
         booksSnapshot.forEach(doc => {
             const bookData = doc.data();
             books.push({
@@ -192,13 +195,13 @@ async function loadBooksFromFirebase() {
             <div class="empty-message">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>Ошибка загрузки книг</p>
+                <p style="font-size: 12px; margin-top: 10px;">${error.message}</p>
             </div>
         `;
         showNotification('Ошибка загрузки книг', 'error');
     }
 }
 
-// Отображение книг
 function renderBooks(booksToRender) {
     if (booksToRender.length === 0) {
         elements.booksContainer.innerHTML = `
@@ -223,7 +226,7 @@ function renderBooks(booksToRender) {
                 <div class="book-tags">
                     <span class="tag">${getCategoryName(book.category)}</span>
                     <span class="tag"><i class="fas fa-download"></i> ${book.downloads || 0}</span>
-                    <span class="tag"><i class="fas fa-file-pdf"></i> PDF</span>
+                    ${book.pageCount ? `<span class="tag"><i class="fas fa-file"></i> ${book.pageCount} стр.</span>` : ''}
                 </div>
                 <p>${book.description || 'Описание отсутствует'}</p>
                 <div class="book-actions">
@@ -231,8 +234,8 @@ function renderBooks(booksToRender) {
                         <i class="fas fa-download"></i> Скачать PDF
                     </button>
                     ${currentUser ? `
-                        <button class="btn btn-outline" onclick="addToFavorites('${book.id}')">
-                            <i class="far fa-heart"></i> В избранное
+                        <button class="btn btn-outline" onclick="toggleFavorite('${book.id}')">
+                            <i class="far fa-heart"></i>
                         </button>
                     ` : ''}
                 </div>
@@ -241,7 +244,6 @@ function renderBooks(booksToRender) {
     `).join('');
 }
 
-// Фильтрация книг
 function filterBooks() {
     const searchTerm = elements.searchInput.value.toLowerCase();
     const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
@@ -259,7 +261,8 @@ function filterBooks() {
     renderBooks(filtered);
 }
 
-// Скачивание книги
+// ==================== СКАЧИВАНИЕ КНИГ ====================
+
 async function downloadBook(bookId, bookTitle, downloadUrl) {
     if (!currentUser) {
         showNotification('Войдите в систему для скачивания', 'warning');
@@ -273,26 +276,29 @@ async function downloadBook(bookId, bookTitle, downloadUrl) {
     }
     
     try {
-        // Открываем ссылку на скачивание в новом окне
+        // Открываем ссылку на скачивание
         window.open(downloadUrl, '_blank');
         
-        // Обновляем статистику скачиваний книги
-        await db.collection('books').doc(bookId).update({
-            downloads: firebase.firestore.FieldValue.increment(1)
+        // Обновляем счетчик скачиваний книги в коллекции "books"
+        const bookRef = db.collection('books').doc(bookId);
+        await bookRef.update({
+            downloads: firebase.firestore.FieldValue.increment(1),
+            lastDownloaded: new Date().toISOString()
         });
         
-        // Обновляем статистику пользователя
+        // Обновляем статистику пользователя в коллекции "users"
         await updateUserDownloadStats(bookId, bookTitle);
         
         showNotification(`Книга "${bookTitle}" скачивается`, 'success');
         
     } catch (error) {
         console.error('Ошибка скачивания:', error);
-        showNotification('Ошибка скачивания', 'error');
+        showNotification('Ошибка при скачивании', 'error');
     }
 }
 
-// Обновление статистики скачивания пользователя
+// ==================== РАБОТА С ПОЛЬЗОВАТЕЛЯМИ ====================
+
 async function updateUserDownloadStats(bookId, bookTitle) {
     if (!currentUser) return;
     
@@ -306,35 +312,40 @@ async function updateUserDownloadStats(bookId, bookTitle) {
             const recentDownloads = userData.recentDownloads || [];
             
             // Добавляем книгу в недавние скачивания
-            recentDownloads.unshift({
-                bookId,
+            const newDownload = {
+                bookId: bookId,
                 title: bookTitle,
                 downloadedAt: new Date().toISOString()
-            });
+            };
             
-            // Ограничиваем до 10 последних скачиваний
-            if (recentDownloads.length > 10) {
-                recentDownloads.pop();
+            // Удаляем дубликаты и добавляем в начало
+            const filteredDownloads = recentDownloads.filter(item => item.bookId !== bookId);
+            filteredDownloads.unshift(newDownload);
+            
+            // Ограничиваем до 5 последних скачиваний
+            if (filteredDownloads.length > 5) {
+                filteredDownloads.pop();
             }
             
             await userRef.update({
                 downloads: downloads + 1,
-                recentDownloads,
+                recentDownloads: filteredDownloads,
                 lastDownload: new Date().toISOString()
             });
         } else {
-            // Создаем документ пользователя если не существует
+            // Создаем документ пользователя в коллекции "users"
             await userRef.set({
                 name: currentUser.displayName || 'Пользователь',
                 email: currentUser.email,
                 downloads: 1,
                 recentDownloads: [{
-                    bookId,
+                    bookId: bookId,
                     title: bookTitle,
                     downloadedAt: new Date().toISOString()
                 }],
                 favorites: [],
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                uid: currentUser.uid
             });
         }
         
@@ -342,12 +353,11 @@ async function updateUserDownloadStats(bookId, bookTitle) {
         loadUserData(currentUser.uid);
         
     } catch (error) {
-        console.error('Ошибка обновления статистики:', error);
+        console.error('Ошибка обновления статистики пользователя:', error);
     }
 }
 
-// Добавление в избранное
-async function addToFavorites(bookId) {
+async function toggleFavorite(bookId) {
     if (!currentUser) {
         showNotification('Войдите в систему', 'warning');
         return;
@@ -361,18 +371,19 @@ async function addToFavorites(bookId) {
             const userData = userDoc.data();
             const favorites = userData.favorites || [];
             
-            if (!favorites.includes(bookId)) {
-                favorites.push(bookId);
-                await userRef.update({ favorites });
-                showNotification('Добавлено в избранное', 'success');
-                loadUserData(currentUser.uid);
-            } else {
-                // Удаление из избранного
+            if (favorites.includes(bookId)) {
+                // Удаляем из избранного
                 const newFavorites = favorites.filter(id => id !== bookId);
                 await userRef.update({ favorites: newFavorites });
                 showNotification('Удалено из избранного', 'info');
-                loadUserData(currentUser.uid);
+            } else {
+                // Добавляем в избранное
+                favorites.push(bookId);
+                await userRef.update({ favorites });
+                showNotification('Добавлено в избранное', 'success');
             }
+            
+            loadUserData(currentUser.uid);
         }
         
     } catch (error) {
@@ -381,80 +392,6 @@ async function addToFavorites(bookId) {
     }
 }
 
-// Авторизация
-async function login(email, password) {
-    try {
-        // Показываем загрузку
-        const submitBtn = elements.loginForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
-        submitBtn.disabled = true;
-        
-        await auth.signInWithEmailAndPassword(email, password);
-        elements.authModal.classList.add('hidden');
-        elements.loginForm.reset();
-        showNotification('Успешный вход!', 'success');
-        
-    } catch (error) {
-        console.error('Ошибка входа:', error);
-        showNotification(getAuthErrorMessage(error), 'error');
-    } finally {
-        // Восстанавливаем кнопку
-        const submitBtn = elements.loginForm.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
-        submitBtn.disabled = false;
-    }
-}
-
-// Регистрация
-async function register(name, email, password) {
-    try {
-        // Показываем загрузку
-        const submitBtn = elements.registerForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Регистрация...';
-        submitBtn.disabled = true;
-        
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        await userCredential.user.updateProfile({ displayName: name });
-        
-        // Создаем документ пользователя в Firestore
-        await db.collection('users').doc(userCredential.user.uid).set({
-            name,
-            email,
-            downloads: 0,
-            favorites: [],
-            recentDownloads: [],
-            createdAt: new Date().toISOString()
-        });
-        
-        elements.authModal.classList.add('hidden');
-        elements.registerForm.reset();
-        showNotification('Регистрация успешна!', 'success');
-        
-    } catch (error) {
-        console.error('Ошибка регистрации:', error);
-        showNotification(getAuthErrorMessage(error), 'error');
-    } finally {
-        // Восстанавливаем кнопку
-        const submitBtn = elements.registerForm.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
-        submitBtn.disabled = false;
-    }
-}
-
-// Выход
-async function logout() {
-    try {
-        await auth.signOut();
-        showNotification('Вы вышли из системы', 'info');
-    } catch (error) {
-        console.error('Ошибка выхода:', error);
-        showNotification('Ошибка выхода', 'error');
-    }
-}
-
-// Загрузка данных пользователя
 async function loadUserData(uid) {
     try {
         const userDoc = await db.collection('users').doc(uid).get();
@@ -474,12 +411,14 @@ async function loadUserData(uid) {
                 elements.recentDownloads.innerHTML = userData.recentDownloads
                     .slice(0, 5)
                     .map(item => `
-                        <div class="recent-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--light-gray); margin-bottom: 10px; border-radius: var(--radius-sm);">
+                        <div class="recent-item">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-book" style="color: var(--primary);"></i>
-                                <span>${item.title}</span>
+                                <span>${item.title || 'Без названия'}</span>
                             </div>
-                            <small style="color: var(--gray);">${new Date(item.downloadedAt).toLocaleDateString()}</small>
+                            <small style="color: var(--gray);">
+                                ${new Date(item.downloadedAt).toLocaleDateString('ru-RU')}
+                            </small>
                         </div>
                     `).join('');
             } else {
@@ -487,6 +426,20 @@ async function loadUserData(uid) {
                     <p class="empty-message">Вы еще не скачивали книги</p>
                 `;
             }
+        } else {
+            // Если документ не существует, создаем его
+            const userRef = db.collection('users').doc(uid);
+            await userRef.set({
+                name: currentUser.displayName || 'Пользователь',
+                email: currentUser.email,
+                downloads: 0,
+                recentDownloads: [],
+                favorites: [],
+                createdAt: new Date().toISOString(),
+                uid: uid
+            });
+            
+            loadUserData(uid); // Загружаем заново
         }
         
     } catch (error) {
@@ -494,20 +447,89 @@ async function loadUserData(uid) {
     }
 }
 
-// Обновление UI в зависимости от состояния авторизации
+// ==================== АВТОРИЗАЦИЯ ====================
+
+async function login(email, password) {
+    try {
+        const submitBtn = elements.loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
+        submitBtn.disabled = true;
+        
+        await auth.signInWithEmailAndPassword(email, password);
+        elements.authModal.classList.add('hidden');
+        elements.loginForm.reset();
+        showNotification('Успешный вход!', 'success');
+        
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        showNotification(getAuthErrorMessage(error), 'error');
+    } finally {
+        const submitBtn = elements.loginForm.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+        submitBtn.disabled = false;
+    }
+}
+
+async function register(name, email, password) {
+    try {
+        const submitBtn = elements.registerForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Регистрация...';
+        submitBtn.disabled = true;
+        
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        await userCredential.user.updateProfile({ displayName: name });
+        
+        // Создаем документ в коллекции "users"
+        await db.collection('users').doc(userCredential.user.uid).set({
+            name: name,
+            email: email,
+            downloads: 0,
+            recentDownloads: [],
+            favorites: [],
+            createdAt: new Date().toISOString(),
+            uid: userCredential.user.uid
+        });
+        
+        elements.authModal.classList.add('hidden');
+        elements.registerForm.reset();
+        showNotification('Регистрация успешна!', 'success');
+        
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        showNotification(getAuthErrorMessage(error), 'error');
+    } finally {
+        const submitBtn = elements.registerForm.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
+        submitBtn.disabled = false;
+    }
+}
+
+async function logout() {
+    try {
+        await auth.signOut();
+        showNotification('Вы вышли из системы', 'info');
+        books = []; // Очищаем книги при выходе
+        loadBooksFromFirebase(); // Перезагружаем книги
+    } catch (error) {
+        console.error('Ошибка выхода:', error);
+        showNotification('Ошибка выхода', 'error');
+    }
+}
+
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+
 function updateUI() {
     const isLoggedIn = !!currentUser;
     
-    // Кнопки авторизации
     elements.loginBtn.classList.toggle('hidden', isLoggedIn);
     elements.registerBtn.classList.toggle('hidden', isLoggedIn);
     elements.logoutBtn.classList.toggle('hidden', !isLoggedIn);
     
-    // Профиль
     elements.userStats.classList.toggle('hidden', !isLoggedIn);
     elements.guestMessage.classList.toggle('hidden', isLoggedIn);
     
-    // Информация о пользователе
     if (isLoggedIn) {
         elements.userName.textContent = currentUser.displayName || 'Пользователь';
         elements.userEmail.textContent = currentUser.email;
@@ -517,11 +539,9 @@ function updateUI() {
     }
 }
 
-// Показать модальное окно авторизации
 function showAuthModal(tab = 'login') {
     elements.authModal.classList.remove('hidden');
     
-    // Устанавливаем активную вкладку
     elements.tabBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
     });
@@ -529,7 +549,6 @@ function showAuthModal(tab = 'login') {
     elements.loginForm.classList.toggle('hidden', tab !== 'login');
     elements.registerForm.classList.toggle('hidden', tab !== 'register');
     
-    // Сбрасываем формы
     if (tab === 'login') {
         elements.loginForm.reset();
     } else {
@@ -537,22 +556,18 @@ function showAuthModal(tab = 'login') {
     }
 }
 
-// Переключение страниц
 function switchPage(pageId) {
     elements.pages.forEach(page => {
         page.classList.toggle('active', page.id === pageId);
     });
     
-    // Прокрутка к верху страницы
     window.scrollTo(0, 0);
     
-    // Обновляем книги при переходе в библиотеку
     if (pageId === 'library') {
         loadBooksFromFirebase();
     }
 }
 
-// Показать уведомление
 function showNotification(message, type = 'info') {
     elements.notificationText.textContent = message;
     elements.notification.className = `notification ${type}`;
@@ -563,7 +578,6 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Получение читаемого названия категории
 function getCategoryName(category) {
     const categories = {
         'fiction': 'Художественная',
@@ -575,50 +589,49 @@ function getCategoryName(category) {
     return categories[category] || category || 'Другое';
 }
 
-// Получение сообщения об ошибке авторизации
 function getAuthErrorMessage(error) {
     switch (error.code) {
-        case 'auth/invalid-email':
-            return 'Некорректный email адрес';
-        case 'auth/user-disabled':
-            return 'Пользователь заблокирован';
-        case 'auth/user-not-found':
-            return 'Пользователь не найден';
-        case 'auth/wrong-password':
-            return 'Неверный пароль';
-        case 'auth/email-already-in-use':
-            return 'Email уже используется';
-        case 'auth/weak-password':
-            return 'Пароль слишком слабый (минимум 6 символов)';
-        case 'auth/network-request-failed':
-            return 'Ошибка сети. Проверьте подключение';
-        case 'auth/too-many-requests':
-            return 'Слишком много попыток. Попробуйте позже';
-        default:
-            return 'Ошибка авторизации: ' + error.message;
+        case 'auth/invalid-email': return 'Некорректный email адрес';
+        case 'auth/user-disabled': return 'Пользователь заблокирован';
+        case 'auth/user-not-found': return 'Пользователь не найден';
+        case 'auth/wrong-password': return 'Неверный пароль';
+        case 'auth/email-already-in-use': return 'Email уже используется';
+        case 'auth/weak-password': return 'Пароль слишком слабый (минимум 6 символов)';
+        case 'auth/network-request-failed': return 'Ошибка сети. Проверьте подключение';
+        default: return 'Ошибка авторизации: ' + error.message;
     }
 }
 
-// Функция для добавления книг (для администратора)
+// ==================== АДМИНИСТРАТИВНЫЕ ФУНКЦИИ ====================
+
 async function addBookToFirebase(bookData) {
     try {
+        // Добавляем книгу в коллекцию "books"
         await db.collection('books').add({
-            ...bookData,
+            title: bookData.title || 'Без названия',
+            author: bookData.author || 'Неизвестный автор',
+            category: bookData.category || 'other',
+            description: bookData.description || 'Описание отсутствует',
+            downloadUrl: bookData.downloadUrl || '',
+            cover: bookData.cover || '📚',
             downloads: 0,
+            pageCount: bookData.pageCount || 0,
+            language: bookData.language || 'Русский',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         });
-        showNotification('Книга добавлена успешно!', 'success');
-        loadBooksFromFirebase();
+        
+        showNotification('Книга добавлена в коллекцию "books"!', 'success');
+        loadBooksFromFirebase(); // Перезагружаем книги
+        
     } catch (error) {
         console.error('Ошибка добавления книги:', error);
-        showNotification('Ошибка добавления книги', 'error');
+        showNotification('Ошибка добавления книги: ' + error.message, 'error');
     }
 }
 
-// Функция для удаления всех книг (очистка базы)
 async function deleteAllBooks() {
-    if (!confirm('Вы уверены? Это удалит ВСЕ книги из базы данных!')) {
+    if (!confirm('Вы уверены? Это удалит ВСЕ книги из коллекции "books"!')) {
         return;
     }
     
@@ -631,71 +644,95 @@ async function deleteAllBooks() {
         });
         
         await batch.commit();
-        showNotification('Все книги удалены', 'success');
+        showNotification('Все книги удалены из коллекции "books"', 'success');
         loadBooksFromFirebase();
+        
     } catch (error) {
         console.error('Ошибка удаления книг:', error);
         showNotification('Ошибка удаления книг', 'error');
     }
 }
 
-// Функция для добавления тестовых книг (если база пустая)
-async function addSampleBooks() {
-    const sampleBooks = [
-        {
-            title: 'Война и мир',
-            author: 'Лев Толстой',
-            category: 'fiction',
-            cover: '📖',
-            description: 'Классика русской литературы о войне 1812 года',
-            downloadUrl: 'https://drive.google.com/uc?export=download&id=ВАШ_ID_1',
-            pageCount: 1225,
-            language: 'Русский'
-        },
-        {
-            title: 'JavaScript для начинающих',
-            author: 'Иван Петров',
-            category: 'education',
-            cover: '💻',
-            description: 'Основы программирования на JavaScript',
-            downloadUrl: 'https://drive.google.com/uc?export=download&id=ВАШ_ID_2',
-            pageCount: 350,
-            language: 'Русский'
-        }
-    ];
+async function fixUserData() {
+    if (!currentUser) {
+        showNotification('Войдите в систему', 'warning');
+        return;
+    }
     
-    for (const book of sampleBooks) {
-        await addBookToFirebase(book);
+    try {
+        const userRef = db.collection('users').doc(currentUser.uid);
+        await userRef.set({
+            name: currentUser.displayName || 'Пользователь',
+            email: currentUser.email,
+            downloads: 0,
+            recentDownloads: [],
+            favorites: [],
+            createdAt: new Date().toISOString(),
+            uid: currentUser.uid
+        }, { merge: true });
+        
+        showNotification('Данные пользователя исправлены', 'success');
+        loadUserData(currentUser.uid);
+        
+    } catch (error) {
+        console.error('Ошибка исправления данных:', error);
+        showNotification('Ошибка исправления данных', 'error');
     }
 }
 
-// Делаем функции глобальными для тестирования
+async function debugDatabase() {
+    console.log('=== DEBUG DATABASE ===');
+    
+    try {
+        // Коллекция books
+        const booksSnapshot = await db.collection('books').get();
+        console.log('Коллекция "books":');
+        if (booksSnapshot.empty) {
+            console.log('  Пустая! Используйте addBookToFirebase() для добавления книг');
+        } else {
+            booksSnapshot.forEach(doc => {
+                console.log(`  - ${doc.id}: ${doc.data().title}`);
+            });
+        }
+        
+        // Коллекция users
+        const usersSnapshot = await db.collection('users').get();
+        console.log('Коллекция "users":');
+        if (usersSnapshot.empty) {
+            console.log('  Пустая!');
+        } else {
+            usersSnapshot.forEach(doc => {
+                console.log(`  - ${doc.id}: ${doc.data().email}`);
+            });
+        }
+        
+    } catch (error) {
+        console.error('Ошибка отладки:', error);
+    }
+}
+
+// Делаем функции глобальными для использования из консоли
 window.addBookToFirebase = addBookToFirebase;
 window.deleteAllBooks = deleteAllBooks;
-window.addSampleBooks = addSampleBooks;
+window.fixUserData = fixUserData;
+window.debugDatabase = debugDatabase;
 window.loadBooksFromFirebase = loadBooksFromFirebase;
 
 // Инициализация при загрузке
 window.onload = function() {
-    // Проверяем, есть ли сохраненная страница
     const savedPage = localStorage.getItem('currentPage') || 'home';
     switchPage(savedPage);
     
-    // Устанавливаем активную ссылку в навигации
     elements.navLinks.forEach(link => {
         if (link.getAttribute('href').substring(1) === savedPage) {
             link.classList.add('active');
         }
     });
     
-    // Сохраняем текущую страницу при переключении
     elements.navLinks.forEach(link => {
         link.addEventListener('click', () => {
             const page = link.getAttribute('href').substring(1);
             localStorage.setItem('currentPage', page);
         });
     });
-    
-    // Автоматический вход для тестирования (можно удалить)
-    // auth.signInWithEmailAndPassword("test@test.com", "123456").catch(console.error);
 };
