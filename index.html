@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library | Библиотека электронных книг</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <header>
+        <div class="container header-container">
+            <a href="#" class="logo">
+                <i class="fas fa-book-open"></i>
+                <span>Digital Library</span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#home">Главная</a></li>
+                    <li><a href="#books">Книги</a></li>
+                    <li><a href="#categories">Категории</a></li>
+                    <li><a href="#about">О нас</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <button id="loginBtn" class="btn btn-outline">Войти</button>
+                <button id="registerBtn" class="btn">Регистрация</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Герой-секция -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>Digital Library - ваша личная библиотека</h1>
+            <p>Откройте для себя тысячи книг различных жанров. Читайте онлайн или скачивайте бесплатно в удобном формате.</p>
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Поиск книг по названию, автору или жанру...">
+                <button class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i> Поиск
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция книг -->
+    <section class="books-section" id="books">
+        <div class="container">
+            <!-- Админ панель появится здесь автоматически для админов -->
+            <div class="section-header">
+                <h2>Популярные книги</h2>
+                <div class="category-filter" id="categoryFilter">
+                    <!-- Категории будут добавлены через JavaScript -->
+                </div>
+            </div>
+            
+            <div class="books-grid" id="booksGrid">
+                <!-- Книги будут добавлены через JavaScript -->
+            </div>
+            
+            <div class="loading" id="loadingBooks">
+                <div class="loader"></div>
+                <p>Загрузка книг...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Модальное окно входа -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeLoginModal">&times;</span>
+            <h2>Вход в библиотеку</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-accent" style="width: 100%;">Войти</button>
+            </form>
+            <div class="login-link">
+                <p>Нет аккаунта? <a href="#" id="showRegister">Зарегистрироваться</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeRegisterModal">&times;</span>
+            <h2>Регистрация</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Имя</label>
+                    <input type="text" id="registerName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Пароль</label>
+                    <input type="password" id="registerPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Подтвердите пароль</label>
+                    <input type="password" id="confirmPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-accent" style="width: 100%;">Зарегистрироваться</button>
+            </form>
+            <div class="login-link">
+                <p>Уже есть аккаунт? <a href="#" id="showLogin">Войти</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления книги (для админов) -->
+    <div class="modal" id="addBookModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeAddBookModal">&times;</span>
+            <h2>Добавить новую книгу</h2>
+            <form id="addBookForm">
+                <div class="form-group">
+                    <label for="bookTitle">Название книги *</label>
+                    <input type="text" id="bookTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookAuthor">Автор *</label>
+                    <input type="text" id="bookAuthor" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookDescription">Описание</label>
+                    <textarea id="bookDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="bookCategory">Категория *</label>
+                    <select id="bookCategory" class="form-control" required>
+                        <option value="">Выберите категорию</option>
+                        <option value="Классика">Классика</option>
+                        <option value="Фэнтези">Фэнтези</option>
+                        <option value="Научная фантастика">Научная фантастика</option>
+                        <option value="Детектив">Детектив</option>
+                        <option value="Детская литература">Детская литература</option>
+                        <option value="Философия">Философия</option>
+                        <option value="Научно-популярная">Научно-популярная</option>
+                        <option value="Бизнес">Бизнес</option>
+                        <option value="Программирование">Программирование</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bookCover">URL обложки</label>
+                    <input type="url" id="bookCover" class="form-control" 
+                           placeholder="https://example.com/cover.jpg">
+                    <small>Или загрузите обложку ниже</small>
+                </div>
+                <div class="form-group">
+                    <label for="coverUpload">Загрузить обложку</label>
+                    <input type="file" id="coverUpload" class="form-control" accept="image/*">
+                    <div id="coverPreview" style="margin-top: 10px; display: none;">
+                        <img id="previewImage" style="max-width: 100px; max-height: 150px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pdfUpload">PDF файл книги *</label>
+                    <input type="file" id="pdfUpload" class="form-control" accept=".pdf" required>
+                    <small id="fileInfo"></small>
+                    <progress id="uploadProgress" value="0" max="100" style="width: 100%; display: none;"></progress>
+                </div>
+                <div class="form-group">
+                    <label for="bookYear">Год издания</label>
+                    <input type="number" id="bookYear" class="form-control" min="1900" max="2024" value="2023">
+                </div>
+                <div class="form-group">
+                    <label for="bookLanguage">Язык</label>
+                    <input type="text" id="bookLanguage" class="form-control" value="Русский">
+                </div>
+                <div class="form-group">
+                    <label for="bookPages">Количество страниц</label>
+                    <input type="number" id="bookPages" class="form-control" min="1">
+                </div>
+                <button type="submit" class="btn btn-accent" style="width: 100%;">
+                    <span id="addBookBtnText">Добавить книгу</span>
+                    <div class="loader" id="addBookLoader" style="display: none; margin: 0 auto;"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer id="about">
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <i class="fas fa-book-open"></i>
+                        <span>Digital Library</span>
+                    </div>
+                    <p>Digital Library - это современная онлайн-библиотека с коллекцией из более чем 10 000 электронных книг. Мы предоставляем доступ к литературе различных жанров для читателей по всему миру.</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Быстрые ссылки</h3>
+                    <ul>
+                        <li><a href="#home">Главная</a></li>
+                        <li><a href="#books">Книги</a></li>
+                        <li><a href="#categories">Категории</a></li>
+                        <li><a href="#about">О нас</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Контакты</h3>
+                    <p><i class="fas fa-envelope"></i> info@digitallibrary.com</p>
+                    <p><i class="fas fa-phone"></i> +7 (999) 123-45-67</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Москва, ул. Книжная, д. 10</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 Digital Library. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
