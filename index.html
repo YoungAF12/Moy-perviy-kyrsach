@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Library | Читай бесплатно</title>
+    <title>Digital Library | Библиотека PDF книг</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Slab:wght@400;500;600&display=swap" rel="stylesheet">
@@ -133,10 +133,10 @@
                 <button class="filter-btn" data-filter="fiction">Художественные</button>
                 <button class="filter-btn" data-filter="education">Образование</button>
                 <button class="filter-btn" data-filter="business">Бизнес</button>
+                <button class="filter-btn" data-filter="science">Наука</button>
             </div>
             
             <div id="booksContainer" class="books-grid">
-                <!-- Книги будут загружены через JavaScript -->
                 <div class="loading">
                     <i class="fas fa-spinner fa-spin"></i> Загрузка книг...
                 </div>
@@ -218,9 +218,12 @@
         <span id="notificationText"></span>
     </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="script.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
