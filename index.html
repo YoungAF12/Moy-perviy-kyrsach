@@ -3,201 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 Онлайн Библиотека | Бесплатные книги PDF</title>
+    <title>📚 Библиотека книг | Скачать PDF бесплатно</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Slab:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <!-- Навигация -->
-    <nav class="navbar">
-        <div class="nav-container">
+    <!-- Шапка -->
+    <header class="header">
+        <div class="container">
             <div class="logo">
-                <i class="fas fa-book-open"></i>
-                <span>DigitalLibrary</span>
+                <i class="fas fa-book"></i>
+                <span>Книжная библиотека</span>
             </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link active" id="homeLink"><i class="fas fa-home"></i> Главная</a>
-                <a href="#" class="nav-link" id="libraryLink"><i class="fas fa-book"></i> Библиотека</a>
-                <a href="#" class="nav-link" id="loginLink"><i class="fas fa-sign-in-alt"></i> Войти</a>
-                <a href="#" class="nav-link" id="registerLink"><i class="fas fa-user-plus"></i> Регистрация</a>
-                <a href="#" class="nav-link" id="dashboardLink" style="display:none;"><i class="fas fa-tachometer-alt"></i> Панель</a>
-                <a href="#" class="nav-link" id="logoutLink" style="display:none;"><i class="fas fa-sign-out-alt"></i> Выйти</a>
-            </div>
-            <div class="user-info" id="userInfo" style="display:none;">
-                <i class="fas fa-user-circle"></i>
-                <span id="userEmail"></span>
+            <div class="stats">
+                <div class="stat-item">
+                    <i class="fas fa-book-open"></i>
+                    <span id="totalBooks">0</span> книг
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-download"></i>
+                    <span id="totalDownloads">0</span> скачиваний
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Главная страница -->
-    <div id="homePage" class="page active">
-        <header class="hero">
-            <div class="hero-content">
-                <h1>Бесплатная библиотека <span class="highlight">PDF книг</span></h1>
-                <p>Тысячи электронных книг в формате PDF. Читайте, скачивайте, наслаждайтесь!</p>
-                <button class="btn-primary" id="exploreBtn">Начать чтение <i class="fas fa-arrow-right"></i></button>
-            </div>
-            <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Библиотека">
-            </div>
-        </header>
-
-        <section class="features">
-            <div class="feature-card">
-                <i class="fas fa-cloud-download-alt"></i>
-                <h3>Скачивайте бесплатно</h3>
-                <p>Все книги доступны для скачивания без ограничений</p>
-            </div>
-            <div class="feature-card">
+    <!-- Основной контент -->
+    <main class="main">
+        <div class="container">
+            <h1 class="page-title">
                 <i class="fas fa-book-reader"></i>
-                <h3>Разнообразные жанры</h3>
-                <p>От классики до современных бестселлеров</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-mobile-alt"></i>
-                <h3>Доступно везде</h3>
-                <p>Читайте на любом устройстве в любое время</p>
-            </div>
-        </section>
-    </div>
-
-    <!-- Библиотека книг -->
-    <div id="libraryPage" class="page">
-        <div class="page-header">
-            <h2><i class="fas fa-book"></i> Наша библиотека</h2>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Поиск книг...">
-                <i class="fas fa-search"></i>
-            </div>
-        </div>
-        
-        <div class="books-container" id="booksContainer">
-            <!-- Книги будут загружены через JavaScript -->
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Загружаем книги...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Страница входа -->
-    <div id="loginPage" class="page">
-        <div class="auth-container">
-            <div class="auth-card">
-                <h2><i class="fas fa-sign-in-alt"></i> Вход в аккаунт</h2>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" required placeholder="ваш@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Пароль</label>
-                        <input type="password" id="loginPassword" required placeholder="Ваш пароль">
-                    </div>
-                    <button type="submit" class="btn-primary">Войти <i class="fas fa-sign-in-alt"></i></button>
-                </form>
-                <p class="auth-switch">Нет аккаунта? <a href="#" id="goToRegister">Зарегистрироваться</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Страница регистрации -->
-    <div id="registerPage" class="page">
-        <div class="auth-container">
-            <div class="auth-card">
-                <h2><i class="fas fa-user-plus"></i> Регистрация</h2>
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label for="registerEmail">Email</label>
-                        <input type="email" id="registerEmail" required placeholder="ваш@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="registerPassword">Пароль</label>
-                        <input type="password" id="registerPassword" required placeholder="Минимум 6 символов">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Подтвердите пароль</label>
-                        <input type="password" id="confirmPassword" required placeholder="Повторите пароль">
-                    </div>
-                    <button type="submit" class="btn-primary">Зарегистрироваться <i class="fas fa-user-check"></i></button>
-                </form>
-                <p class="auth-switch">Уже есть аккаунт? <a href="#" id="goToLogin">Войти</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Панель администратора -->
-    <div id="dashboardPage" class="page">
-        <div class="dashboard-container">
-            <h2><i class="fas fa-tachometer-alt"></i> Панель управления</h2>
-            <p class="admin-info">Здесь вы можете добавлять новые книги в библиотеку</p>
+                Бесплатная библиотека PDF книг
+            </h1>
+            <p class="page-subtitle">Скачивайте книги бесплатно в один клик</p>
             
-            <div class="add-book-form">
-                <h3><i class="fas fa-plus-circle"></i> Добавить новую книгу</h3>
-                <form id="addBookForm">
-                    <div class="form-group">
-                        <label for="bookTitle">Название книги</label>
-                        <input type="text" id="bookTitle" required placeholder="Введите название книги">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookAuthor">Автор</label>
-                        <input type="text" id="bookAuthor" required placeholder="Введите автора">
-                    </div>
-                    <div class="form-group">
-                        <label for="bookDescription">Описание</label>
-                        <textarea id="bookDescription" rows="3" placeholder="Краткое описание книги"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookGenre">Жанр</label>
-                        <select id="bookGenre">
-                            <option value="Художественная">Художественная литература</option>
-                            <option value="Научная">Научная литература</option>
-                            <option value="Программирование">Программирование</option>
-                            <option value="История">История</option>
-                            <option value="Детская">Детская литература</option>
-                            <option value="Другое">Другое</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookCover">Ссылка на обложку</label>
-                        <input type="url" id="bookCover" placeholder="https://example.com/cover.jpg">
-                    </div>
-                    <div class="form-group">
-                        <label for="googleDriveLink">Ссылка на Google Drive</label>
-                        <input type="url" id="googleDriveLink" required placeholder="https://drive.google.com/...">
-                        <small>Скопируйте прямую ссылку на PDF файл из Google Drive</small>
-                    </div>
-                    <button type="submit" class="btn-success">Добавить книгу <i class="fas fa-save"></i></button>
-                </form>
+            <!-- Фильтры -->
+            <div class="filters">
+                <input type="text" id="searchInput" placeholder="Поиск по названию или автору...">
+                <select id="categoryFilter">
+                    <option value="">Все категории</option>
+                    <option value="Русская классика">Русская классика</option>
+                    <option value="Зарубежная литература">Зарубежная литература</option>
+                    <option value="Научная литература">Научная литература</option>
+                    <option value="Фэнтези">Фэнтези</option>
+                    <option value="Детектив">Детектив</option>
+                </select>
+                <button id="resetFilters">
+                    <i class="fas fa-redo"></i> Сбросить
+                </button>
             </div>
             
-            <div class="admin-books">
-                <h3><i class="fas fa-list"></i> Все книги в базе</h3>
-                <div id="adminBooksList"></div>
+            <!-- Контейнер для книг -->
+            <div class="books-grid" id="booksContainer">
+                <!-- Книги будут загружены здесь -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Загружаем книги из библиотеки...</p>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Как добавить книгу в библиотеку?</h3>
+                <p>Администратор добавляет книги в Firebase Firestore в коллекцию "books". Каждая книга содержит ссылку на скачивание из Google Drive.</p>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Модальное окно -->
-    <div id="bookModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <div id="modalContent">
-                <!-- Контент будет заполнен через JS -->
-            </div>
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 Книжная библиотека. Все книги предоставлены для бесплатного скачивания.</p>
+            <p>Для добавления книг свяжитесь с администратором.</p>
         </div>
-    </div>
+    </footer>
 
-    <!-- Уведомления -->
-    <div id="notification" class="notification"></div>
-
-    <!-- Скрипты -->
+    <!-- Скрипт -->
     <script src="script.js"></script>
 </body>
 </html>
