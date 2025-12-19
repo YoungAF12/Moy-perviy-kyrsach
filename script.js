@@ -1,11 +1,12 @@
 // Firebase конфигурация - ЗАМЕНИТЕ НА ВАШУ КОНФИГУРАЦИЮ
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDqnau8N2mHjhOTMpxXqYe8EDGfxqGqQn0",
+  authDomain: "my-first-kyrsachic.firebaseapp.com",
+  projectId: "my-first-kyrsachic",
+  storageBucket: "my-first-kyrsachic.firebasestorage.app",
+  messagingSenderId: "741117010262",
+  appId: "1:741117010262:web:2972f2e62517ccc2b9f6f7",
+  measurementId: "G-81YS0ZHEXX"
 };
 
 // Инициализация Firebase
