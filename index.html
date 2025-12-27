@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Библиотека</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    <h1>IT Библиотека</h1>
+                </div>
+                <p class="subtitle">Ваша коллекция технической литературы</p>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Профиль</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Панель управления -->
+        <div class="control-panel">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск по названию, автору или теме...">
+                </div>
+                <div class="stats">
+                    <span><i class="fas fa-book"></i> <span id="totalBooks">0</span> книг</span>
+                    <span><i class="fas fa-star"></i> <span id="favBooks">0</span> избранных</span>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button id="addBookBtn" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Добавить книги</span>
+                </button>
+                <input type="file" id="fileInput" multiple accept=".pdf,.epub,.txt,.docx,.mobi" style="display: none;">
+                
+                <div class="dropdown">
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Сортировка</span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="#" data-sort="date-desc">По дате (новые)</a>
+                        <a href="#" data-sort="date-asc">По дате (старые)</a>
+                        <a href="#" data-sort="name-asc">По названию (А-Я)</a>
+                        <a href="#" data-sort="name-desc">По названию (Я-А)</a>
+                        <a href="#" data-sort="size">По размеру</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filters">
+            <div class="filter-tags">
+                <button class="filter-tag active" data-filter="all">Все</button>
+                <button class="filter-tag" data-filter="unread">Не прочитано</button>
+                <button class="filter-tag" data-filter="reading">Читаю сейчас</button>
+                <button class="filter-tag" data-filter="finished">Прочитано</button>
+                <button class="filter-tag" data-filter="favorite">Избранное</button>
+            </div>
+            <div class="format-filters">
+                <span>Формат:</span>
+                <button class="format-btn active" data-format="all">Все</button>
+                <button class="format-btn" data-format="pdf">PDF</button>
+                <button class="format-btn" data-format="epub">EPUB</button>
+                <button class="format-btn" data-format="txt">TXT</button>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <div class="content-header">
+                <h2><i class="fas fa-books"></i> Ваши книги</h2>
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="grid">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" data-view="list">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Контейнер для книг -->
+            <div class="books-container grid-view" id="booksContainer">
+                <!-- Книги будут загружаться здесь -->
+            </div>
+
+            <!-- Состояние пустой библиотеки -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3>Библиотека пуста</h3>
+                <p>Добавьте свои первые IT-книги, чтобы начать работу</p>
+                <button id="addFirstBook" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Добавить книги
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-info">
+                <p><i class="fas fa-info-circle"></i> Поддерживаемые форматы: PDF, EPUB, TXT, DOCX, MOBI</p>
+                <p><i class="fas fa-database"></i> Данные хранятся локально в вашем браузере</p>
+            </div>
+            <div class="footer-stats">
+                <span>Общий объем: <span id="totalSize">0</span> MB</span>
+                <span>Последнее обновление: <span id="lastUpdate">сегодня</span></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно загрузки -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cloud-upload-alt"></i> Добавить книги</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-methods">
+                    <div class="upload-method active" data-method="upload">
+                        <i class="fas fa-folder-open"></i>
+                        <h4>Загрузить файлы</h4>
+                        <p>Выберите файлы с вашего компьютера</p>
+                    </div>
+                    <div class="upload-method" data-method="folder">
+                        <i class="fas fa-folder"></i>
+                        <h4>Вся папка</h4>
+                        <p>Загрузите все книги из папки</p>
+                    </div>
+                </div>
+
+                <div class="upload-area" id="dropArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="upload-title">Перетащите файлы сюда</p>
+                    <p class="upload-subtitle">или</p>
+                    <button id="selectFiles" class="btn btn-outline">
+                        <i class="fas fa-folder-open"></i> Выберите файлы
+                    </button>
+                    <p class="upload-formats">PDF, EPUB, TXT, DOCX, MOBI (макс. 50MB каждый)</p>
+                </div>
+
+                <div class="selected-files" id="selectedFiles">
+                    <!-- Выбранные файлы будут появляться здесь -->
+                </div>
+
+                <div class="upload-options">
+                    <label class="checkbox">
+                        <input type="checkbox" id="autoCovers" checked>
+                        <span class="checkmark"></span>
+                        <span>Создать обложки автоматически</span>
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="addToFav" checked>
+                        <span class="checkmark"></span>
+                        <span>Добавить новые книги в избранное</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Отмена</button>
+                <button id="startUpload" class="btn btn-primary" disabled>
+                    <i class="fas fa-upload"></i> Загрузить (<span id="fileCount">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно книги -->
+    <div id="bookModal" class="modal book-modal">
+        <div class="modal-content">
+            <!-- Содержимое будет заполняться динамически -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
